@@ -3,20 +3,20 @@
 #include <WiFi.h>
 #include <HTTPClient.h>
 
-#define SS_PIN 21   // Connect SDA of RFID module to GPIO 21
-#define RST_PIN 22  // Connect RST of RFID module to GPIO 22
+#define SS_PIN 21   
+#define RST_PIN 22  
 
-MFRC522 mfrc522(SS_PIN, RST_PIN);  // Create MFRC522 instance
+MFRC522 mfrc522(SS_PIN, RST_PIN); 
 
 // Wi-Fi credentials
-const char* ssid = "no internet";     // Replace with your Wi-Fi name
-const char* password = "221-15-4983"; // Replace with your Wi-Fi password
-const char* serverURL = "http://192.168.1.3:5000/users/receive-uid"; // Server URL (Replace with your server endpoint)
+const char* ssid = "no internet";    
+const char* password = "221-15-4983"; 
+const char* serverURL = "http://192.168.1.3:5000/users/receive-uid"; 
 
 void setup() {
-    Serial.begin(9600);   // Start Serial Monitor
-    SPI.begin();          // Start SPI Communication
-    mfrc522.PCD_Init();   // Initialize RFID Module
+    Serial.begin(9600);   
+    SPI.begin();          
+    mfrc522.PCD_Init();   
 
    Serial.println("Connecting to Wi-Fi...");
 
@@ -46,18 +46,14 @@ void loop() {
         Serial.println("\nReconnected to Wi-Fi.");
     }
 
-    if (!mfrc522.PICC_IsNewCardPresent()) {
-        return; // If no card is present, return
-    }
-    if (!mfrc522.PICC_ReadCardSerial()) {
-        return; // If card cannot be read, return
-    }
+    if (!mfrc522.PICC_IsNewCardPresent()) return;
+    if (!mfrc522.PICC_ReadCardSerial()) return;
 
     Serial.print("Card UID: ");
     String cardUID = "";
     
     for (byte i = 0; i < mfrc522.uid.size; i++) {
-        Serial.print(mfrc522.uid.uidByte[i], HEX);
+        //Serial.print(mfrc522.uid.uidByte[i], HEX);
         cardUID += String(mfrc522.uid.uidByte[i], HEX);
     }
     Serial.println(cardUID);
@@ -65,7 +61,7 @@ void loop() {
     // Send UID to Server
     sendUIDToServer(cardUID);
 
-    delay(2000);  // Wait before reading again
+    delay(2000);  
 }
 
 void sendUIDToServer(String uid) {
@@ -77,9 +73,9 @@ void sendUIDToServer(String uid) {
         http.begin(serverURL);  
         http.addHeader("Content-Type", "application/json");
 
-        String jsonData = "{ \"uid\": \"" + uid + "\" }";
+        String jsonData = "{ \"nfcUID\": \"" + uid + "\" }";
         Serial.print("Sending Data: ");
-        Serial.println( jsonData);
+        Serial.println(jsonData);
 
         int httpResponseCode = http.POST(jsonData);  
         Serial.print("HTTP Response Code: ");
