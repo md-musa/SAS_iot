@@ -2,6 +2,7 @@
 #include <MFRC522.h>
 #include <WiFi.h>
 #include <HTTPClient.h>
+#include <ArduinoJson.h>
 
 #define SS_PIN 21   
 #define RST_PIN 22  
@@ -83,7 +84,8 @@ void sendUIDToServer(String uid) {
 
         if (httpResponseCode > 0) {
             String response = http.getString();
-            Serial.println("Server Response: " + response);
+           // Serial.println("Server Response: " + response);
+            parseJsonResponse(response);
         } else {
             Serial.println("Error in sending request: " + String(httpResponseCode));
         }
@@ -95,6 +97,29 @@ void sendUIDToServer(String uid) {
 
 
 
+
+void parseJsonResponse(String response) {
+   String name = extractValue(response, "\"name\":");
+  String userID = extractValue(response, "\"userID\":");
+
+  // Print the extracted values
+  Serial.println("|--------------------------------------|");
+  Serial.println("| Name: " + name);
+  Serial.println("| Student ID: " + userID);
+  Serial.println("|--------------------------------------|");
+  Serial.println();
+  Serial.println();
+}
+
+String extractValue(String response, String key) {
+  int startIndex = response.indexOf(key);  
+  if (startIndex == -1) {
+    return "Not Found";  
+  }
+  startIndex = response.indexOf(":", startIndex) + 2;  
+  int endIndex = response.indexOf("\"", startIndex);
+  return response.substring(startIndex, endIndex);
+}
 
 
 
