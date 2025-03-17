@@ -1,0 +1,27 @@
+# Ignore all node_modules folders inside the project (including subfolders)
+**/node_modules/
+
+# Ignore all log files
+*.log
+
+# Ignore environment files (commonly used for sensitive information)
+.env
+
+# Ignore npm-debug log files
+npm-debug.log*
+
+# Ignore build/compiled files (e.g., from bundlers like Webpack or TypeScript)
+dist/
+build/
+
+# Ignore the package-lock.json or yarn.lock file (if you don't want them tracked)
+package-lock.json
+yarn.lock
+
+# Ignore temporary files created by IDEs or editors
+.vscode/
+.idea/
+
+# Ignore OS generated files
+.DS_Store
+Thumbs.db
