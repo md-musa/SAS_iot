@@ -6,7 +6,7 @@ const createUser = async (req, res) => {
     const user = new UserModel(req.body);
     await user.save();
     res.status(201).json({
-        messege: "User created successfully",
+        message: "User created successfully",
         name: user.name,
         role: user.role,
         userID: user.userID,

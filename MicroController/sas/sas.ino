@@ -10,9 +10,9 @@
 MFRC522 mfrc522(SS_PIN, RST_PIN); 
 
 // Wi-Fi credentials
-const char* ssid = "no internet";    
-const char* password = "221-15-4983"; 
-const char* serverURL = "http://192.168.1.3:5000/users/receive-uid"; 
+const char* ssid = "Robin's Pixel 4a (5G)";    
+const char* password = "123456777"; 
+const char* serverURL = "http://10.235.94.109:5000/users/receive-uid"; 
 
 void setup() {
     Serial.begin(9600);   
@@ -69,7 +69,7 @@ void sendUIDToServer(String uid) {
     if (WiFi.status() == WL_CONNECTED) {
         HTTPClient http;
          Serial.print("Trying to connect to:");
-          Serial.println(serverURL);
+         Serial.println(serverURL);
 
         http.begin(serverURL);  
         http.addHeader("Content-Type", "application/json");
@@ -99,7 +99,7 @@ void sendUIDToServer(String uid) {
 
 
 void parseJsonResponse(String response) {
-   String name = extractValue(response, "\"name\":");
+  String name = extractValue(response, "\"name\":");
   String userID = extractValue(response, "\"userID\":");
 
   // Print the extracted values

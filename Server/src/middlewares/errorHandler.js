@@ -8,7 +8,7 @@ function errorHandler(error, req, res, next) {
   console.log('STACK  =====> ', error.stack);
 
   if (typeof error.getStatusCode === 'function') {
-    res.status(error.getStatusCode()).json({
+    res.status(404).json({
       message: environment ? 'Internal server error' : error.message,
       stack: environment ? null : error.stack,
     });
