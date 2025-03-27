@@ -5,22 +5,22 @@ const createAttendance = async (req, res) => {
   const { nfcUID } = req.body;
   if (!nfcUID) throw new Error("nfcUID is required");
 
-  const user = await UserModel.findOne({ nfcUID }); // Use findOne to get a single user
+  const user = await UserModel.findOne({ nfcUID }); 
   if (!user) throw new Error("Invalid User");
   console.log(user);
 
-  const userId = user._id; // Use _id from the user document
+  const userId = user._id; 
 
   const todaysAttendance = await AttendanceModel.findOne({
-    userId, // Make sure this field is userId, not userID
-    date: new Date().toISOString().split("T")[0], // Format date as YYYY-MM-DD
+    userId, 
+    date: new Date().toISOString().split("T")[0], 
   });
   console.log(todaysAttendance);
 
   if (todaysAttendance) {
     if (todaysAttendance.checkOutTime) {
       res.status(400).json({
-        message: "User already checked out",
+        message: "Already checked out",
         name: user.name,
         userId: user.userId,
       });

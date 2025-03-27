@@ -10,9 +10,9 @@
 MFRC522 mfrc522(SS_PIN, RST_PIN); 
 
 // Wi-Fi credentials
-const char* ssid = "Robin's Pixel 4a (5G)";    
-const char* password = "123456777"; 
-const char* serverURL = "http://10.235.94.109:5000/users/receive-uid"; 
+const char* ssid = "Takrim_Iritiza";    
+const char* password = "quvqc8ro"; 
+const char* serverURL = "http://192.168.1.104:5000/attendances/create"; 
 
 void setup() {
     Serial.begin(9600);   
@@ -99,16 +99,16 @@ void sendUIDToServer(String uid) {
 
 
 void parseJsonResponse(String response) {
-  String name = extractValue(response, "\"name\":");
-  String userID = extractValue(response, "\"userID\":");
+  String message = extractValue(response, "\"message\":");
+  //String userID = extractValue(response, "\"userID\":");
 
   // Print the extracted values
   Serial.println("|--------------------------------------|");
-  Serial.println("| Name: " + name);
-  Serial.println("| Student ID: " + userID);
+  Serial.println("| Name: " + message);
+ // Serial.println("| Student ID: " + userID);
   Serial.println("|--------------------------------------|");
   Serial.println();
-  Serial.println();
+
 }
 
 String extractValue(String response, String key) {

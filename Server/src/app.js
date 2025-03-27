@@ -11,6 +11,13 @@ const AttendanceRoute = require("./routes/attendance.route");
 
 connectDB();
 
+// Task
+// 1. can to check out within 1 hour of check in
+// 2. can check in only once a day
+// 3. can check out only once a day
+// 4. can check in only if check out is done
+// 
+
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
