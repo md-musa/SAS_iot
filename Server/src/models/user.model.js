@@ -7,7 +7,10 @@ const UserSchema = new mongoose.Schema({
     password: { type: String, required: true },
     nfcUID: { type: String, unique: true, required: true },
     userId: { type: String, unique: true, require: true },
-    dep: {type: String, required: false}
+    dep: {type: String, required: false},
+    profilePic: { type: String, required: false },
+    designation: { type: String, required: false },
+    
 }, { timestamps: true });
 
 const UserModel =  mongoose.model("User", UserSchema);

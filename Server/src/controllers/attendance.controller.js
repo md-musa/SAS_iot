@@ -5,15 +5,15 @@ const createAttendance = async (req, res) => {
   const { nfcUID } = req.body;
   if (!nfcUID) throw new Error("nfcUID is required");
 
-  const user = await UserModel.findOne({ nfcUID }); 
+  const user = await UserModel.findOne({ nfcUID });
   if (!user) throw new Error("Invalid User");
   console.log(user);
 
-  const userId = user._id; 
+  const userId = user._id;
 
   const todaysAttendance = await AttendanceModel.findOne({
-    userId, 
-    date: new Date().toISOString().split("T")[0], 
+    userId,
+    date: new Date().toISOString().split("T")[0],
   });
   console.log(todaysAttendance);
 
@@ -36,7 +36,7 @@ const createAttendance = async (req, res) => {
   } else {
     // create a new attendance
     const attendance = new AttendanceModel({
-      userId, 
+      userId,
       date: new Date().toISOString().split("T")[0], // Ensure the date is in YYYY-MM-DD format
       checkInTime: new Date(),
       status: "present",
@@ -51,11 +51,7 @@ const createAttendance = async (req, res) => {
 };
 
 const getAttendance = async (req, res) => {
-  console.log(req.body);
-  const { nfcUID } = req.body;
-  if (!nfcUID) throw new Error("nfcUID is required");
-
-  const attendance = await AttendanceModel.find({ nfcUID });
+  const attendance = await AttendanceModel.find().populate("userId", "name dep role userId");
   res.json(attendance);
 };
 
