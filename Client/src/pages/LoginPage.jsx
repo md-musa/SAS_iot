@@ -2,11 +2,13 @@ import { useState } from "react";
 import { EnvelopeIcon, LockClosedIcon } from "@heroicons/react/24/outline";
 import toast, { Toaster } from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../context/Auth";
 
 export default function LoginPage() {
+  const { user, setUser } = useAuth();
   const [credentials, setCredentials] = useState({
-    email: "",
-    password: "",
+    email: "musa@diu.edu.bd",
+    password: "123456",
   });
 
   const [isLoading, setIsLoading] = useState(false);
@@ -45,12 +47,13 @@ export default function LoginPage() {
       });
 
       const data = await response.json();
-      console.log(data);
+      console.log("Login data", data);
       if (!response.ok) {
         throw new Error(data.message || "Login failed");
       }
 
       localStorage.setItem("user", JSON.stringify(data));
+      setUser(data);
 
       toast.success("Login successful!", { id: loadingToast });
       navigate("/dashboard");

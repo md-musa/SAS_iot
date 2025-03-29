@@ -4,6 +4,7 @@ import moment from "moment";
 import axios from "axios";
 import { Datepicker } from "@meinefinsternis/react-horizontal-date-picker";
 import { enUS } from "date-fns/locale";
+import { fetchAttendances } from "../services/attendance";
 
 const AttendanceDashboard = () => {
   const [attendances, setAttendances] = useState([]);
@@ -12,91 +13,28 @@ const AttendanceDashboard = () => {
   const ENTRY_TIME = "09:00:00";
   const GRACE_PERIOD = 15;
   const [selectedDate, setSelectedDate] = useState(moment().toDate());
+  const [date, setDate] = useState(new Date());
 
   // Fetch attendance data for selected date
-  const fetchAttendances = async (date) => {
-    try {
-      setLoading(true);
-      const formattedDate = moment(date).format("YYYY-MM-DD");
-      const response = await axios.get(
-        `http://localhost:5000/attendances?date=${formattedDate}`
-      );
-      
-      const processedData = response.data.map((attendance) => {
-        let status = "Absent";
-        let lateDuration = null;
-        let isLate = false;
-
-        if (attendance.checkInTime) {
-          const checkInMoment = moment(attendance.checkInTime);
-          const entryMoment = moment(ENTRY_TIME, "HH:mm:ss");
-          const diffMinutes = checkInMoment.diff(entryMoment, "minutes");
-
-          if (diffMinutes <= GRACE_PERIOD) {
-            status = "On Time";
-          } else {
-            const lateHours = Math.floor(diffMinutes / 60);
-            const lateMins = diffMinutes % 60;
-            lateDuration = `${lateHours > 0 ? lateHours + "h " : ""}${lateMins}m`;
-            status = `Late (${lateDuration})`;
-            isLate = true;
-          }
-        }
-
-        return {
-          ...attendance,
-          name: attendance.userId?.name || "Unknown",
-          department: attendance.userId?.dep || "N/A",
-          profilePic: `https://ui-avatars.com/api/?name=${encodeURIComponent(
-            attendance.userId?.name || "Unknown"
-          )}&background=random`,
-          checkInTime: attendance.checkInTime
-            ? moment(attendance.checkInTime).format("h:mm A")
-            : "N/A",
-          checkOutTime: attendance.checkOutTime
-            ? moment(attendance.checkOutTime).format("h:mm A")
-            : "N/A",
-          duration:
-            attendance.checkInTime && attendance.checkOutTime
-              ? calculateDuration(attendance.checkInTime, attendance.checkOutTime)
-              : "N/A",
-          status,
-          lateDuration,
-          isLate,
-          rawCheckInTime: attendance.checkInTime,
-          date: moment(attendance.date).format("MMM D, YYYY"),
-        };
-      });
-
-      setAttendances(processedData);
-      setLoading(false);
-    } catch (error) {
-      console.error("Error fetching attendance data:", error);
-      setLoading(false);
-    }
-  };
-
-  const calculateDuration = (start, end) => {
-    const startTime = moment(start);
-    const endTime = moment(end);
-    const duration = moment.duration(endTime.diff(startTime));
-    const hours = Math.floor(duration.asHours());
-    const minutes = duration.minutes();
-    return `${hours}h ${minutes}m`;
-  };
 
   const handleDateChange = (date) => {
-    console.log(moment(date[1]).format());
-    const [startValue] = date;
-    if (startValue) {
-      setSelectedDate(startValue);
-      fetchAttendances(startValue);
-    }
+    setDate(moment(date[1]).format());
   };
 
   useEffect(() => {
-    fetchAttendances(selectedDate);
-  }, [selectedDate]);
+    fetchAttendances({
+      date,
+    })
+      .then((data) => {
+        console.log(data);
+        setAttendances(data);
+        setLoading(false);
+      })
+      .catch((error) => {
+        console.error("Error fetching attendance data:", error);
+        setLoading(false);
+      });
+  }, [date]);
 
   const filteredAttendances = attendances.filter(
     (employee) =>
@@ -112,29 +50,6 @@ const AttendanceDashboard = () => {
 
   return (
     <div className="bg-gray-100 min-h-screen">
-      <div className="navbar bg-white shadow-md px-6">
-        <div className="flex-1">
-          <a className="text-xl font-bold">Attendance System</a>
-        </div>
-        <div className="flex-none flex items-center space-x-4">
-          <div className="relative">
-            <MagnifyingGlassIcon className="w-5 h-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-            <input
-              type="text"
-              placeholder="Search by name or department"
-              className="input input-bordered pl-10"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
-          </div>
-          <div className="avatar">
-            <div className="w-10 rounded-full">
-              <img src="https://via.placeholder.com/40" alt="User Avatar" />
-            </div>
-          </div>
-        </div>
-      </div>
-
       <div className="px-6 pt-4">
         <Datepicker
           onChange={handleDateChange}
@@ -145,7 +60,7 @@ const AttendanceDashboard = () => {
               const baseClass = "text-center p-2 rounded-full";
               const isToday = moment(date).isSame(moment(), "day");
               const isSelected = moment(date).isSame(selectedDate, "day");
-              
+
               if (isSelected) {
                 return `${baseClass} bg-blue-500 text-white`;
               }

@@ -1,17 +1,13 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
+import { useAuth } from "../context/Auth";
 
 const ProtectedRoute = ({ children }) => {
-  const [user, setUser] = useState(null);
+  const{user} = useAuth();
 
-  useEffect(() => {
-    // Check for token in localStorage (remember me) or sessionStorage
-    const user = localStorage.getItem("user");
-    console.log("user form Local storage", user);
-    if (user) setUser(JSON.parse(user));
-  }, []);
 
+  console.log("parsed user", user);
   if (!user) {
     return <Navigate to="/" replace />;
   }

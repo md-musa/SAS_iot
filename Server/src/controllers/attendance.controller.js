@@ -1,5 +1,6 @@
 const AttendanceModel = require("../models/attendance.model");
 const UserModel = require("../models/user.model");
+const moment = require("moment");
 
 const createAttendance = async (req, res) => {
   const { nfcUID } = req.body;
@@ -51,8 +52,49 @@ const createAttendance = async (req, res) => {
 };
 
 const getAttendance = async (req, res) => {
-  const attendance = await AttendanceModel.find().populate("userId", "name dep role userId");
-  res.json(attendance);
+  const { userId, day, month, year } = req.query;
+  const query = {};
+
+  // 1. Handle userId lookup
+  if (userId) {
+    const user = await UserModel.findOne({ userId });
+    if (!user) throw new Error("User not found");
+
+    query.userId = user._id;
+  }
+
+  // 2. Date filtering with Moment.js
+  if (year) {
+    let startDate, endDate;
+
+    if (month && day) {
+      // Specific day
+      startDate = moment(`${year}-${month}-${day}`, "YYYY-MM-DD").startOf("day");
+      endDate = moment(startDate).endOf("day");
+    } else if (month) {
+      // Entire month
+      startDate = moment(`${year}-${month}`, "YYYY-MM").startOf("month");
+      endDate = moment(startDate).endOf("month");
+    } else {
+      // Entire year
+      startDate = moment(year, "YYYY").startOf("year");
+      endDate = moment(startDate).endOf("year");
+    }
+
+    query.date = {
+      $gte: startDate.toDate(),
+      $lte: endDate.toDate(),
+    };
+  }
+
+  // 3. Execute query
+  const attendance = await AttendanceModel.find(query).populate("userId", "name email department");
+   console.log(attendance);
+  res.status(200).json({
+    success: true,
+    count: attendance.length,
+    data: attendance,
+  });
 };
 
 const AttendanceController = {
