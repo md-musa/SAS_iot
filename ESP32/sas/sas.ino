@@ -10,9 +10,9 @@
 MFRC522 mfrc522(SS_PIN, RST_PIN); 
 
 // Wi-Fi credentials
-const char* ssid = "Takrim_Iritiza";    
-const char* password = "quvqc8ro"; 
-const char* serverURL = "http://192.168.1.104:5000/attendances/create"; 
+const char* ssid = "Musa";    
+const char* password = "qwertyui"; 
+const char* serverURL = "http://192.168.84.109:5000/attendances/create"; 
 
 void setup() {
     Serial.begin(9600);   
