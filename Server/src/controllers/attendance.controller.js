@@ -52,34 +52,19 @@ const createAttendance = async (req, res) => {
 };
 
 const getAttendance = async (req, res) => {
-  const { userId, day, month, year } = req.query;
+  const {employeeId, date, range } = req.query;
   const query = {};
+  console.log("Query params:", req.query);
 
-  // 1. Handle userId lookup
-  if (userId) {
-    const user = await UserModel.findOne({ userId });
-    if (!user) throw new Error("User not found");
-
+  if (employeeId) {
+    const user = await UserModel.findOne({ userId: employeeId });
+    if (!user) throw new Error("Invalid User ID");
     query.userId = user._id;
   }
 
-  // 2. Date filtering with Moment.js
-  if (year) {
-    let startDate, endDate;
-
-    if (month && day) {
-      // Specific day
-      startDate = moment(`${year}-${month}-${day}`, "YYYY-MM-DD").startOf("day");
-      endDate = moment(startDate).endOf("day");
-    } else if (month) {
-      // Entire month
-      startDate = moment(`${year}-${month}`, "YYYY-MM").startOf("month");
-      endDate = moment(startDate).endOf("month");
-    } else {
-      // Entire year
-      startDate = moment(year, "YYYY").startOf("year");
-      endDate = moment(startDate).endOf("year");
-    }
+  if (date) {
+    const startDate = moment(date).startOf(range);
+    const endDate = moment(date).endOf(range);
 
     query.date = {
       $gte: startDate.toDate(),
@@ -88,8 +73,9 @@ const getAttendance = async (req, res) => {
   }
 
   // 3. Execute query
-  const attendance = await AttendanceModel.find(query).populate("userId", "name email department");
-   console.log(attendance);
+  const attendance = await AttendanceModel.find(query).populate("userId", "name email userId department profilePic").lean();
+
+ // console.log(attendance);
   res.status(200).json({
     success: true,
     count: attendance.length,

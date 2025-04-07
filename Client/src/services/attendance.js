@@ -3,7 +3,7 @@ import moment from "moment";
 import { calculateDuration } from "../utils/dateCalculate";
 
 const ENTRY_TIME = "09:00:00"; // 9 AM
-const GRACE_PERIOD = 15; // 15 minutes
+const GRACE_PERIOD = 0; // 15 minutes
 
 export const fetchAttendances = async (params) => {
   const response = await axios.get(`http://localhost:5000/attendances`, {

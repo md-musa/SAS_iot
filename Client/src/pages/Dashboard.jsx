@@ -1,46 +1,35 @@
 import React, { useState, useEffect } from "react";
-import { MagnifyingGlassIcon } from "@heroicons/react/24/outline";
 import moment from "moment";
-import axios from "axios";
-import { Datepicker } from "@meinefinsternis/react-horizontal-date-picker";
-import { enUS } from "date-fns/locale";
 import { fetchAttendances } from "../services/attendance";
 
 const AttendanceDashboard = () => {
   const [attendances, setAttendances] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState("");
-  const ENTRY_TIME = "09:00:00";
-  const GRACE_PERIOD = 15;
-  const [selectedDate, setSelectedDate] = useState(moment().toDate());
-  const [date, setDate] = useState(new Date());
+  const [date, setDate] = useState(moment().format("YYYY-MM-DD")); // Default to today's date
 
-  // Fetch attendance data for selected date
-
-  const handleDateChange = (date) => {
-    setDate(moment(date[1]).format());
+  const handleDateChange = (e) => {
+    setDate(e.target.value);
   };
 
   useEffect(() => {
-    fetchAttendances({
-      date,
-    })
-      .then((data) => {
-        console.log(data);
-        setAttendances(data);
-        setLoading(false);
-      })
-      .catch((error) => {
-        console.error("Error fetching attendance data:", error);
-        setLoading(false);
-      });
-  }, [date]);
+    let interval;
 
-  const filteredAttendances = attendances.filter(
-    (employee) =>
-      employee.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      employee.department.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+    const fetchData = async () => {
+      try {
+        const data = await fetchAttendances({ date, range: "day" });
+        setAttendances(data);
+      } catch (error) {
+        console.error("Fetch error:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+    interval = setInterval(fetchData, 5000);
+
+    return () => clearInterval(interval);
+  }, [date]);
 
   const summaryCounts = {
     onTime: attendances.filter((a) => a.status === "On Time").length,
@@ -50,42 +39,32 @@ const AttendanceDashboard = () => {
 
   return (
     <div className="bg-gray-100 min-h-screen">
-      <div className="px-6 pt-4">
-        <Datepicker
-          onChange={handleDateChange}
-          locale={enUS}
-          startValue={selectedDate}
-          classNames={{
-            dayItem: (date) => {
-              const baseClass = "text-center p-2 rounded-full";
-              const isToday = moment(date).isSame(moment(), "day");
-              const isSelected = moment(date).isSame(selectedDate, "day");
-
-              if (isSelected) {
-                return `${baseClass} bg-blue-500 text-white`;
-              }
-              if (isToday) {
-                return `${baseClass} bg-blue-100 text-blue-800`;
-              }
-              return baseClass;
-            },
-          }}
-        />
+      <div className="px-6 pt-4 w-1/2 mx-auto">
+        <div className="px-6 pt-4">
+          <input
+            type="date"
+            value={date}
+            onChange={handleDateChange}
+            max={moment().format("YYYY-MM-DD")} // Prevent selecting future dates
+            className="input input-bordered w-full px-3 py-4 rounded-2xl bg-white shadow-sm h-12 text-lg"
+          />
+        </div>
       </div>
 
+      {/* Rest of the component remains the same */}
       <div className="container mx-auto p-6">
-        <div className="grid grid-cols-3 gap-4 mb-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
           <div className="bg-green-100 p-4 rounded-lg shadow flex items-center justify-between">
             <div>
               <h3 className="text-lg font-semibold">On Time</h3>
-              <p className="text-sm text-gray-600">Arrived by 9:15 AM</p>
+              <p className="text-sm text-gray-600">Arrived by 9:00 AM</p>
             </div>
             <p className="text-2xl font-bold">{summaryCounts.onTime}</p>
           </div>
           <div className="bg-yellow-100 p-4 rounded-lg shadow flex items-center justify-between">
             <div>
               <h3 className="text-lg font-semibold">Late</h3>
-              <p className="text-sm text-gray-600">Arrived after 9:15 AM</p>
+              <p className="text-sm text-gray-600">Arrived after 9:00 AM</p>
             </div>
             <p className="text-2xl font-bold">{summaryCounts.late}</p>
           </div>
@@ -99,16 +78,15 @@ const AttendanceDashboard = () => {
         </div>
 
         <div className="overflow-x-auto bg-white p-4 rounded-lg shadow">
-          {loading ? (
-            <div className="flex justify-center">
-              <span className="loading loading-spinner loading-lg"></span>
+          {attendances.length === 0 ? (
+            <div className="text-center py-8">
+              <p>No attendance records found for {moment(date).format("MMMM D, YYYY")}</p>
             </div>
           ) : (
             <table className="table w-full">
               <thead>
                 <tr className="bg-gray-100">
                   <th>Employee</th>
-                  <th>ID</th>
                   <th>Check-in</th>
                   <th>Check-out</th>
                   <th>Duration</th>
@@ -117,34 +95,41 @@ const AttendanceDashboard = () => {
                 </tr>
               </thead>
               <tbody>
-                {filteredAttendances.map((employee, index) => (
-                  <tr key={index} className="hover:bg-gray-50">
+                {attendances.map((employee, index) => (
+                  <tr key={employee._id} className="hover:bg-gray-50">
                     <td className="flex items-center space-x-3">
                       <div className="avatar">
                         <div className="w-10 rounded-full">
-                          <img src={employee.profilePic} alt={employee.name} />
+                          <img
+                            src={employee.profilePic || "/default-avatar.png"}
+                            alt={employee.name}
+                            onError={(e) => {
+                              e.target.onerror = null;
+                              e.target.src = "/default-avatar.png";
+                            }}
+                          />
                         </div>
                       </div>
                       <div>
                         <span className="font-medium">{employee.name}</span>
-                        <p className="text-xs text-gray-500">{employee.date}</p>
+                        <p className="text-xs text-gray-500">{employee.userId?.userId || "N/A"}</p>
+                        <p className="text-xs text-gray-500">{moment(employee.date).format("MMM D, YYYY")}</p>
                       </div>
                     </td>
-                    <td>{employee.userId?.userId || "N/A"}</td>
-                    <td>{employee.checkInTime}</td>
-                    <td>{employee.checkOutTime}</td>
-                    <td>{employee.duration}</td>
-                    <td>{employee.department}</td>
+                    <td>{employee.checkInTime || "-"}</td>
+                    <td>{employee.checkOutTime || "-"}</td>
+                    <td>{employee.duration || "-"}</td>
+                    <td>{employee.department || "N/A"}</td>
                     <td
                       className={`font-bold ${
-                        employee.status.includes("On Time")
+                        employee.status === "On Time"
                           ? "text-green-500"
                           : employee.isLate
                           ? "text-yellow-500"
                           : "text-red-500"
                       }`}
                     >
-                      {employee.status}
+                      {employee.status || "Absent"}
                     </td>
                   </tr>
                 ))}
