@@ -17,7 +17,7 @@ const Attendance = () => {
       const data = await fetchAttendances({
         employeeId,
         date: `${year}-${month}-01`,
-        range: "month", 
+        range: "month",
       });
       setAttendanceData(data);
     } catch (error) {
@@ -103,7 +103,6 @@ const Attendance = () => {
                 Monthly Summary - {moment(`${year}-${month}`).format("MMMM YYYY")}
               </h2>
               <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-6">
-                
                 <div className="bg-green-50 p-4 rounded-lg shadow">
                   <h3 className="text-sm font-medium text-gray-600">Present</h3>
                   <p className="text-2xl font-bold">{summaryStats.present}</p>
@@ -115,10 +114,6 @@ const Attendance = () => {
                 <div className="bg-yellow-50 p-4 rounded-lg shadow">
                   <h3 className="text-sm font-medium text-gray-600">Late Arrivals</h3>
                   <p className="text-2xl font-bold">{summaryStats.late}</p>
-                </div>
-                <div className="bg-purple-50 p-4 rounded-lg shadow">
-                  <h3 className="text-sm font-medium text-gray-600">Avg. Hours/Day</h3>
-                  <p className="text-2xl font-bold">{summaryStats.averageHours.toFixed(1)}</p>
                 </div>
               </div>
             </div>

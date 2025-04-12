@@ -1,25 +1,41 @@
+#include <Wire.h>
 #include <SPI.h>
 #include <MFRC522.h>
 #include <WiFi.h>
 #include <HTTPClient.h>
+#include <LiquidCrystal_I2C.h>
 #include <ArduinoJson.h>
 
-#define SS_PIN 21   
-#define RST_PIN 22  
+// ==== Hardware Pins ====
+#define SS_PIN 21         // RFID SDA
+#define RST_PIN 4         // RFID RST
+#define BUZZER_PIN 25     // Buzzer
 
 MFRC522 mfrc522(SS_PIN, RST_PIN); 
+LiquidCrystal_I2C lcd(0x27, 16, 2);
 
 // Wi-Fi credentials
-const char* ssid = "Musa";    
-const char* password = "qwertyui"; 
-const char* serverURL = "http://192.168.84.109:5000/attendances/create"; 
+const char* ssid = "no internet";
+const char* password = "221-15-4983";
+
+// ==== Server URL ====
+const char* serverURL = "http://192.168.1.14:5000/attendances/create";
 
 void setup() {
-    Serial.begin(9600);   
+  Serial.begin(9600);
+  Wire.begin();
+  lcd.init();
+  lcd.backlight();
+
+  lcd.setCursor(0, 0);
+  lcd.print("WiFi connecting...");
+
+
+
     SPI.begin();          
     mfrc522.PCD_Init();   
-
    Serial.println("Connecting to Wi-Fi...");
+
 
     // Connect to Wi-Fi
     WiFi.begin(ssid, password);
@@ -33,7 +49,11 @@ void setup() {
     Serial.println(WiFi.localIP()); 
 
 
+    lcd.clear();
+    lcd.setCursor(0, 0);
+    lcd.print("Place RFID");
     Serial.println("Place your RFID card near the reader...");
+
 }
 
 void loop() {
@@ -54,7 +74,6 @@ void loop() {
     String cardUID = "";
     
     for (byte i = 0; i < mfrc522.uid.size; i++) {
-        //Serial.print(mfrc522.uid.uidByte[i], HEX);
         cardUID += String(mfrc522.uid.uidByte[i], HEX);
     }
     Serial.println(cardUID);
@@ -95,9 +114,6 @@ void sendUIDToServer(String uid) {
     }
 }
 
-
-
-
 void parseJsonResponse(String response) {
   String message = extractValue(response, "\"message\":");
   //String userID = extractValue(response, "\"userID\":");
@@ -120,7 +136,6 @@ String extractValue(String response, String key) {
   int endIndex = response.indexOf("\"", startIndex);
   return response.substring(startIndex, endIndex);
 }
-
 
 
 
